@@ -215,6 +215,7 @@ def main():
         args = sys.argv[1:]
         body = sys.stdin.read()
         queue_message(args, body)
+        sys.stdin.close()
         sys.stdout.close()
         sys.stderr.close()
         pid = os.fork()
