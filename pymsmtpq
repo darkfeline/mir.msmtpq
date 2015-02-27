@@ -169,7 +169,7 @@ def _add_command(name):
 
 
 @_add_command('h')
-def cmd_print_help():
+def _cmd_print_help():
     """Print command help."""
     print("""Usage: {} --manage=COMMAND
 
@@ -182,7 +182,7 @@ def cmd_print_help():
 
 
 @_add_command('s')
-def cmd_send_all():
+def _cmd_send_all():
     """Command to send all queued messages."""
     send_all()
 
@@ -195,7 +195,7 @@ def main():
     logging.basicConfig(level='DEBUG', filename=LOGFILE,
                         format='%(asctime)s %(levelname)s %(message)s')
     if len(sys.argv) >= 3 and sys.argv[1] == '--manage':
-        func = _COMMANDS.get(sys.argv[2], cmd_print_help)
+        func = _COMMANDS.get(sys.argv[2], _cmd_print_help)
         func()
     else:
         args = sys.argv[1:]
