@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
 """
-pymsmtpq.py
-===========
+pymsmtpq
+========
 
 Script for queuing messages for sending with msmtp.
 
