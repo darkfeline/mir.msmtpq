@@ -215,6 +215,8 @@ def main():
         args = sys.argv[1:]
         body = sys.stdin.read()
         queue_message(args, body)
+        sys.stdout.close()
+        sys.stderr.close()
         pid = os.fork()
         if pid == 0:
             # pylint: disable=broad-except
