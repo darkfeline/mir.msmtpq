@@ -1,0 +1,213 @@
+#!/usr/bin/python3
+
+"""
+pymsmtpq.py
+===========
+
+Script for queuing messages for sending with msmtp.
+
+Usage
+-----
+
+    pymsmtpq <args>
+
+Use just like msmtp or sendmail.  pymsmtpq will queue the message and then
+attempt to send all queued messages in a forked process.
+
+    pymsmtp --manage s
+
+Send all queued messages.
+
+    pymsmtp --manage h
+
+Print management help.
+
+Configuration
+-------------
+
+Edit the constants below.
+
+"""
+
+import json
+import logging
+import os
+import subprocess
+import sys
+import time
+import uuid
+
+# msmtp program path
+MSMTP = 'msmtp'
+# Queue directory; you need to create it first
+QUEUE_DIR = os.path.join(os.environ['HOME'], '.pymsmtp.queue')
+# Path to log file
+LOGFILE = os.path.join(os.environ['HOME'], '.log', 'pymsmtpq.log')
+# Path to queue lock file
+LOCKFILE = os.path.join(QUEUE_DIR, '.pymsmtpq.lock')
+
+
+###############################################################################
+# Helpful definitions
+
+class Lock:
+
+    """Manage semaphore file lock.
+
+    Example:
+
+        with Lock():
+            # Do stuff
+
+    """
+
+    # pylint: disable=too-few-public-methods
+
+    max_tries = 5
+
+    def __init__(self):
+        self.lockpath = LOCKFILE
+        self.lockfile = None
+
+    def __enter__(self):
+        for _ in range(self.max_tries):
+            try:
+                self.lockfile = open(self.lockpath, 'x')
+            except OSError:
+                time.sleep(1)
+                continue
+            else:
+                return
+        logging.error('Could not obtain lock.  Lockfile: %s', self.lockpath)
+        raise LockError
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.lockfile.close()
+        os.unlink(self.lockpath)
+
+
+class LockError(Exception):
+    """Could not lock."""
+
+
+class SendError(Exception):
+    """Error sending message."""
+
+
+###############################################################################
+# pymsmtpq functions
+
+def queue_message(args, body):
+    """Queue an msmtp message with given args and input body.
+
+    Args:
+        args: Command arguments
+        body: Message body
+    Returns:
+        Name of queued message.
+
+    """
+    with Lock():
+        used_names = os.listdir(QUEUE_DIR)
+        while True:
+            name = uuid.uuid4().hex
+            if name not in used_names:
+                break
+        with open(os.path.join(QUEUE_DIR, name), 'x') as file:
+            json.dump({'args': args, 'body': body}, file)
+    logging.info('Queued message %s', name)
+    return name
+
+
+def send_message(name):
+    """Send a queued message with the given name.
+
+    Raises:
+        SendError: Sending failed
+
+    """
+    filename = os.path.join(QUEUE_DIR, name)
+    with Lock():
+        with open(filename, 'r') as file:
+            message = json.load(file)
+        args = message['args']
+        body = message['body']
+        process = subprocess.Popen([MSMTP] + args, stdin=subprocess.PIPE)
+        process.communicate(body.encode())
+        process.wait()
+        if process.returncode != 0:
+            logging.error('Could not send message %s', name)
+            raise SendError
+        logging.info('Sent message %s; removing from queue', name)
+        os.unlink(filename)
+
+
+def send_all():
+    """Send all messages in queue."""
+    logging.info('Sending all messages...')
+    for name in os.listdir(QUEUE_DIR):
+        try:
+            send_message(name)
+        except SendError:
+            logging.info('Sending stopped.')
+            return
+    logging.info('Sending finished.')
+
+
+###############################################################################
+# Command definitions
+
+_COMMANDS = {}
+
+def _add_command(name):
+    """Make decorator to add function as command."""
+    def adder(func):
+        """Add function as command."""
+        _COMMANDS[name] = func
+        return func
+    return adder
+
+
+@_add_command('h')
+def cmd_print_help():
+    """Print command help."""
+    print("""Usage: {} --manage=COMMAND
+
+    Commands:
+
+    h    Print this help
+    s    Send all queued messages
+
+    """.format(sys.argv[0]))
+
+
+@_add_command('s')
+def cmd_send_all():
+    """Command to send all queued messages."""
+    send_all()
+
+
+###############################################################################
+# Entry point
+
+def main():
+    """Entry point."""
+    logging.basicConfig(level='DEBUG', filename=LOGFILE,
+                        format='%(asctime)s %(levelname)s %(message)s')
+    if len(sys.argv) >= 3 and sys.argv[1] == '--manage':
+        func = _COMMANDS.get(sys.argv[2], 'h')
+        func()
+    else:
+        args = sys.argv[1:]
+        body = sys.stdin.read()
+        queue_message(args, body)
+        pid = os.fork()
+        if pid == 0:
+            # pylint: disable=broad-except
+            try:
+                send_all()
+            except Exception:
+                logging.exception('Caught exception in fork.')
+
+if __name__ == '__main__':
+    main()
