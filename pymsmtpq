@@ -215,16 +215,6 @@ def main():
         args = sys.argv[1:]
         body = sys.stdin.read()
         queue_message(args, body)
-        sys.stdin.close()
-        sys.stdout.close()
-        sys.stderr.close()
-        pid = os.fork()
-        if pid == 0:
-            # pylint: disable=broad-except
-            try:
-                send_all()
-            except Exception:
-                logging.exception('Caught exception in fork.')
 
 if __name__ == '__main__':
     main()
