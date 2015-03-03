@@ -185,7 +185,7 @@ def _add_command(name):
 @_add_command('h')
 def _cmd_print_help():
     """Print command help."""
-    print("""Usage: {} --manage=COMMAND
+    print("""Usage: {} --manage COMMAND
 
     Commands:
 
