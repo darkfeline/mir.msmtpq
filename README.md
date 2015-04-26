@@ -11,11 +11,11 @@ Usage
 Use just like msmtp or sendmail.  pymsmtpq will queue the message, but WON'T
 SEND THEM.  You will have to send them manually:
 
-    pymsmtp --manage s
+    pymsmtpq --manage s
 
 Send all queued messages.
 
-    pymsmtp --manage h
+    pymsmtpq --manage h
 
 Print management help.
 
