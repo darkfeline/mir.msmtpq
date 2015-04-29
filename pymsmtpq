@@ -33,7 +33,7 @@ import hashlib
 MSMTP = 'msmtp'
 
 # Database for storing queue
-QUEUE_DIR = os.path.join(os.environ['HOME'], '.pymsmtp.queue')
+QUEUE_DIR = os.path.join(os.environ['HOME'], '.pymsmtpq.queue')
 
 # Path to log file
 LOGFILE = os.path.join(os.environ['HOME'], '.log', 'pymsmtpq.log')
@@ -68,8 +68,8 @@ class Message:
         self.body = body
 
     def dump(self, file):
-        json.dump(file, {'args': self.args,
-                         'body': self.body})
+        json.dump({'args': self.args,
+                   'body': self.body}, file)
 
     @classmethod
     def load(cls, file):
