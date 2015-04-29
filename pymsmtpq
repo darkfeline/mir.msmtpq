@@ -27,13 +27,14 @@ import json
 import os
 import subprocess
 import sys
-import sqlite3
 import hashlib
 
 # msmtp program path
 MSMTP = 'msmtp'
+
 # Database for storing queue
-DBFILE = os.path.join(os.environ['HOME'], '.pymsmtp.db')
+QUEUE_DIR = os.path.join(os.environ['HOME'], '.pymsmtp.queue')
+
 # Path to log file
 LOGFILE = os.path.join(os.environ['HOME'], '.log', 'pymsmtpq.log')
 
@@ -42,29 +43,12 @@ class SendError(Exception):
     """Error sending message."""
 
 
-def _init_db(path):
-    conn = sqlite3.connect(path)
-    cur = conn.cursor()
-    cur.execute(
-        '''CREATE TABLE messages (mid TEXT, args json, body TEXT,
-        PRIMARY KEY (mid) ON CONFLICT ROLLBACK)''')
-    conn.commit()
-    return conn
-
-
-def _open_db(path):
-    if not os.path.exists(path):
-        return _init_db(path)
-    return sqlite3.connect(path)
+def _get_message(name):
+    return os.path.join(QUEUE_DIR, name)
 
 
 def _send_email(prog, args, body):
     """Send an email with given program, arguments, and body.
-
-    Args:
-        prog: sendmail program path
-        args: list of argument strings
-        body: message body as string
 
     Raises:
         SendError: Sending failed.
@@ -77,103 +61,66 @@ def _send_email(prog, args, body):
         raise SendError
 
 
-class Queue:
+class Message:
 
-    def __init__(self, path):
-        self._conn = _open_db(path)
+    def __init__(self, args, body):
+        self.args = args
+        self.body = body
 
-    def close(self):
-        self._conn.close()
+    def dump(self, file):
+        json.dump(file, {'args': self.args,
+                         'body': self.body})
 
-    def _cursor(self):
-        return self._conn.cursor()
+    @classmethod
+    def load(cls, file):
+        data = json.load(file)
+        return cls(data['args'], data['body'])
 
-    def _commit(self):
-        self._conn.commit()
 
-    def queue_message(self, args, body):
-        """Queue an msmtp message with given args and input body.
+def queue_message(args, body):
+    """Queue an msmtp message with given args and input body.
 
-        Args:
-            args: Command arguments
-            body: Message body
-        Returns:
-            Name of queued message.
+    Args:
+        args: Command arguments
+        body: Message body
+    Returns:
+        Name of queued message.
 
-        """
-        hasher = hashlib.sha1()
-        hasher.update(body.encode())
-        mid = hasher.hexdigest()
-        cur = self._cursor()
-        cur.execute('INSERT INTO messages VALUES (?, ?, ?)',
-                    (mid, json.dumps(args), body))
-        self._commit()
-        logging.info('Queued %s', mid)
-        return mid
+    """
+    hasher = hashlib.sha1()
+    hasher.update(body.encode())
+    name = hasher.hexdigest()
+    with open(_get_message(name), 'x') as file:
+        Message(args, body).dump(file)
+    logging.info('Queued %s', name)
+    return name
 
-    def _send_message(self, mid, args, body):
-        """Send a message, deleting it if successful.
 
-        This function handles shared logging and maintenance.
+def send_message(name):
+    """Send a queued message with the given name.
 
-        Args:
-            mid: message id
-            args: JSON encoded list of args
-            body: string containing message body
+    Raises:
+        SendError: Sending failed.
 
-        """
-        args = json.loads(args)
-        try:
-            _send_email(MSMTP, args, body)
-        except SendError:
-            logging.error('Could not send %s', mid)
-            raise
-        cur = self._cursor()
-        cur.execute('DELETE FROM messages WHERE mid=?', (mid,))
-        self._commit()
-        logging.info('Sent %s; removing from queue', mid)
+    """
+    path = _get_message(name)
+    with open(path) as file:
+        message = Message.load(file)
+    try:
+        _send_email(MSMTP, message.args, message.body)
+    except SendError:
+        logging.error('Could not send %s', name)
+        raise
+    logging.info('Sent %s', name)
+    os.unlink(path)
 
-    def send_one(self, mid):
-        """Send a queued message with the given message id.
 
-        Raises:
-            SendError: Sending failed.
-
-        """
-        cur = self._cursor()
-        cur.execute('SELECT mid, args, body FROM messages WHERE mid=?', (mid,))
-        _, args, body = cur.fetchone()
-        self._send_message(mid, args, body)
-
-    def send_all(self):
-        """Send all messages in queue."""
-        logging.info('Sending all messages...')
-        cur = self._cursor()
-        cur.execute('SELECT mid, args, body FROM messages')
-        while True:
-            row = cur.fetchone()
-            if row is None:
-                break
-            mid, args, body = row
-            try:
-                self._send_message(mid, args, body)
-            except SendError:
-                logging.info('Sending stopped.')
-                raise
-        logging.info('Sending finished.')
-
-    def list_all(self):
-        """List all queued messages."""
-        cur = self._cursor()
-        cur.execute('SELECT mid, args, body FROM messages')
-        return cur.fetchall()
-
-    def delete_one(self, mid):
-        """Delete one queued message."""
-        cur = self._cursor()
-        cur.execute('DELETE FROM messages WHERE mid=?', (mid,))
-        self._commit()
-        logging.info('Deleted %s', mid)
+def send_all():
+    """Send all messages in queue."""
+    logging.info('Sending all messages...')
+    for name in os.listdir(QUEUE_DIR):
+        send_message(name)
+    logging.info('Sending finished.')
 
 
 ###############################################################################
@@ -198,44 +145,38 @@ def _cmd_print_help():
 
     Commands:
 
-    h        Print this help
-    s        Send all queued messages
-    l        List all messages
-    d <mid>  Delete a message
-    o <mid>  Send one message
+    h         Print this help
+    s         Send all queued messages
+    l         List all messages
+    d <name>  Delete a message
+    o <name>  Send one message
 
     """.format(sys.argv[0]))
 
 
 @_add_command('s')
 def _cmd_send_all():
-    queue = Queue(DBFILE)
-    queue.send_all()
-    queue.close()
+    send_all()
 
 
 @_add_command('l')
 def _cmd_list():
-    queue = Queue(DBFILE)
-    rows = queue.list_all()
-    queue.close()
-    for mid, _, body in rows:
-        print('MID: {}'.format(mid))
-        print(body)
+    for name in os.listdir(QUEUE_DIR):
+        print('Message: {}'.format(name))
+        with open(_get_message(name)) as file:
+            message = Message.load(file)
+        print(message.args)
+        print(message.body)
 
 
 @_add_command('d')
-def _cmd_delete(mid):
-    queue = Queue(DBFILE)
-    queue.delete_one(mid)
-    queue.close()
+def _cmd_delete(name):
+    os.unlink(_get_message(name))
 
 
 @_add_command('o')
-def _cmd_send_one(mid):
-    queue = Queue(DBFILE)
-    queue.send_one(mid)
-    queue.close()
+def _cmd_send_one(name):
+    send_message(name)
 
 
 ###############################################################################
@@ -251,9 +192,7 @@ def main():
     else:
         args = sys.argv[1:]
         body = sys.stdin.read()
-        queue = Queue(DBFILE)
-        queue.queue_message(args, body)
-        queue.close()
+        queue_message(args, body)
 
 if __name__ == '__main__':
     main()
