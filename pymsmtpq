@@ -242,7 +242,7 @@ def _cmd_send_one(mid):
 # Entry point
 def main():
     """Entry point."""
-    logging.basicConfig(level='info', filename=LOGFILE,
+    logging.basicConfig(level='INFO', filename=LOGFILE,
                         format='%(asctime)s %(levelname)s %(message)s')
 
     if len(sys.argv) >= 3 and sys.argv[1] == '--manage':
