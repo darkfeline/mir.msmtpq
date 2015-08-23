@@ -1,7 +1,7 @@
 # Generic Makefile for installing a single script.
 
 SCRIPT=pymsmtpq
-INSTALL_DIR=~/bin
+INSTALL_DIR=~/.local/bin
 SCRIPT_PATH=$(realpath $(SCRIPT))
 
 all:
