@@ -186,6 +186,9 @@ def main():
     logging.basicConfig(level='INFO', filename=LOGFILE,
                         format='%(asctime)s %(levelname)s %(message)s')
 
+    if not os.path.exists(QUEUE_DIR):
+        os.mkdir(QUEUE_DIR)
+
     if len(sys.argv) >= 3 and sys.argv[1] == '--manage':
         func = _COMMANDS.get(sys.argv[2], _cmd_print_help)
         func(*sys.argv[3:])
