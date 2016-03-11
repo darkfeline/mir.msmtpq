@@ -183,6 +183,8 @@ def _cmd_send_one(name):
 # Entry point
 def main():
     """Entry point."""
+    if not os.path.exists(os.path.dirname(LOGFILE)):
+        os.mkdir(os.path.dirname(LOGFILE))
     logging.basicConfig(level='INFO', filename=LOGFILE,
                         format='%(asctime)s %(levelname)s %(message)s')
 
