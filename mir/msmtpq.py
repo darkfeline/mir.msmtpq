@@ -179,8 +179,6 @@ def _cmd_send_one(name):
     send_message(name)
 
 
-###############################################################################
-# Entry point
 def main():
     """Entry point."""
     if not os.path.exists(os.path.dirname(LOGFILE)):
