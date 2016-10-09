@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='mir.msmtpq',
-    version='0.1.0',
+    version='0.2.0',
     description='Queue messages for msmtp',
     long_description='',
     keywords='',
@@ -19,10 +19,10 @@ setup(
         'Programming Language :: Python :: 3.5',
     ],
 
-    py_modules=['mir.msmtpq'],
+    packages=['mir.msmtpq'],
     entry_points={
         'console_scripts': [
-            'msmtpq = mir.msmtpq:main',
+            'msmtpq = mir.msmtpq.main:main',
         ],
     },
 )

@@ -1,5 +1,5 @@
-pymsmtpq
-========
+mir.msmtpq
+==========
 
 Script for queuing messages for sending with msmtp.
 
@@ -8,23 +8,15 @@ Usage
 
 ::
 
-    pymsmtpq <args>
+    msmtpq <args>
 
-Use just like msmtp or sendmail.  pymsmtpq will queue the message, but WON'T
+Use just like msmtp or sendmail.  pymsmtpq will queue the email, but WON'T
 SEND THEM.  You will have to send them manually::
 
-    pymsmtpq --manage s
+    msmtpq --manage send
 
-Send all queued messages::
-
-    pymsmtpq --manage h
-
-Print management help.
-
-Configuration
--------------
-
-Edit the constants in the source file.
+This allows you to control when emails are sent, allowing you to queue up emails
+when you don't have Internet access.
 
 Emacs configuration
 -------------------
@@ -35,10 +27,10 @@ asynchronously with msmtp and Emacs's sendmail support.
 Configure Emacs to use pymsmtp::
 
     (setq message-send-mail-function 'message-send-mail-with-sendmail
-          sendmail-program "~/bin/pymsmtpq")  ; Change the path as appropriate
+          sendmail-program "~/bin/msmtpq")  ; Change the path as appropriate
 
 Add a hook to flush the queue after sending::
 
     (add-hook 'message-sent-hook
               (lambda ()
-                (start-process "pymsmtpq-flush" nil "pymsmtpq" "--manage" "s")))
+                (start-process "msmtpq-flush" nil "msmtpq" "--manage" "s")))
