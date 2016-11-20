@@ -22,14 +22,15 @@ logger = logging.getLogger(__name__)
 
 class Sendmail:
 
-    """sendmail wrapper"""
+    """sendmail wrapper."""
 
     def __init__(self, prog):
         self.prog = prog
 
     def __call__(self, message):
         try:
-            subprocess.run([self.prog] + message.args,
+            subprocess.run(
+                [self.prog] + message.args,
                 input=message.body.encode(), check=True)
         except subprocess.CalledProcessError:
             logger.error('Failed to send %s', message.key)
