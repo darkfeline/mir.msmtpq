@@ -5,7 +5,7 @@ from setuptools import setup
 setup(
     name='mir.msmtpq',
     version='0.2.0',
-    description='Queue messages for msmtp',
+    description='Message queue for msmtp',
     long_description='',
     keywords='',
     url='https://github.com/darkfeline/mir.msmtpq',

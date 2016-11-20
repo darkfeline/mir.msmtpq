@@ -1,7 +1,8 @@
 mir.msmtpq
 ==========
 
-Script for queuing messages for sending with msmtp.
+mir.msmtpq is a message queue for msmtpq, for sending email
+asynchronously and queuing messages while offline.
 
 Usage
 -----
