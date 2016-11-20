@@ -3,6 +3,14 @@ Release notes
 
 This project uses `semantic versioning <http://semver.org/>`_.
 
+1.0.0
+-----
+
+Changed
+^^^^^^^
+
+- API is now stable.
+
 0.2.0
 -----
 

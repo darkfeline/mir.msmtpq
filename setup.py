@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='mir.msmtpq',
-    version='0.2.0',
+    version='1.0.0',
     description='Message queue for msmtp',
     long_description='',
     keywords='',
@@ -12,7 +12,7 @@ setup(
     author='Allen Li',
     author_email='darkfeline@felesatra.moe',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Intended Audience :: End Users/Desktop',
         'License :: OSI Approved :: Apache Software License',
