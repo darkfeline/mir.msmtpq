@@ -20,46 +20,6 @@ import json
 import os
 
 
-class Queue(collections.abc.MutableMapping):
-
-    """Object mapping for the queue directory."""
-
-    def __init__(self, queue_dir):
-        self.queue_dir = queue_dir
-
-    def __getitem__(self, key):
-        message_path = self._get_message_path(key)
-        try:
-            with open(message_path) as file:
-                return Message.load(file)
-        except OSError as e:
-            raise KeyError(key) from e
-
-    def __setitem__(self, key, message):
-        message_path = self._get_message_path(key)
-        with open(message_path, 'w') as file:
-            message.dump(file)
-
-    def __delitem__(self, key):
-        message_path = self._get_message_path(key)
-        os.unlink(message_path)
-
-    def __iter__(self):
-        yield from os.listdir(self.queue_dir)
-
-    def __len__(self):
-        return len(os.listdir(self.queue_dir))
-
-    def add(self, message):
-        """Queue a message and return its key."""
-        self[message.key] = message
-        return message.key
-
-    def _get_message_path(self, key):
-        """Get pathname for message with given key."""
-        return os.path.join(self.queue_dir, key)
-
-
 class Message:
 
     """sendmail message"""
@@ -67,6 +27,12 @@ class Message:
     def __init__(self, args, body):
         self.args = args
         self.body = body
+
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            return self.args == other.args and self.body == other.body
+        else:
+            return NotImplemented
 
     def __repr__(self):
         return '{cls}(args={this.args!r}, body={this.body!r})'.format(
@@ -96,3 +62,46 @@ class Message:
         hasher = hashlib.sha1()
         hasher.update(self.body.encode())
         return hasher.hexdigest()
+
+
+class Queue(collections.abc.MutableMapping):
+
+    """Object mapping for the queue directory."""
+
+    _message_cls = Message
+
+    def __init__(self, queue_dir):
+        # XXX Python 3.6 fspath support
+        self.queue_dir = str(queue_dir)
+
+    def __getitem__(self, key):
+        message_path = self._get_message_path(key)
+        try:
+            with open(message_path) as file:
+                return self._message_cls.load(file)
+        except OSError as e:
+            raise KeyError(key) from e
+
+    def __setitem__(self, key, message):
+        message_path = self._get_message_path(key)
+        with open(message_path, 'w') as file:
+            message.dump(file)
+
+    def __delitem__(self, key):
+        message_path = self._get_message_path(key)
+        os.unlink(message_path)
+
+    def __iter__(self):
+        yield from os.listdir(self.queue_dir)
+
+    def __len__(self):
+        return len(os.listdir(self.queue_dir))
+
+    def add(self, message):
+        """Queue a message and return its key."""
+        self[message.key] = message
+        return message.key
+
+    def _get_message_path(self, key):
+        """Get pathname for message with given key."""
+        return os.path.join(self.queue_dir, key)

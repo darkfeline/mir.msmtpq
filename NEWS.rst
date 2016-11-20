@@ -11,6 +11,11 @@ Changed
 
 - API is now stable.
 
+Fixed
+^^^^^
+
+- Fixed messages being removed even if sending failed.
+
 0.2.0
 -----
 

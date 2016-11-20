@@ -34,5 +34,6 @@ class Sendmail:
                 input=message.body.encode(), check=True)
         except subprocess.CalledProcessError:
             logger.error('Failed to send %s', message.key)
+            raise
         else:
             logger.info('Sent %s', message.key)
