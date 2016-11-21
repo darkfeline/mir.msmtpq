@@ -37,7 +37,10 @@ def _get_sendmail():
 
 
 def _get_sender():
-    return queuelib.Sender(queue=_get_queue(), sendmail=_get_sendmail())
+    return queuelib.QueueSender(
+        queue=_get_queue(),
+        sendmail=_get_sendmail(),
+    )
 
 
 ###############################################################################

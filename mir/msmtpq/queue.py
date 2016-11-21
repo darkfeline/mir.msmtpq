@@ -143,7 +143,7 @@ class Queue(collections.abc.MutableMapping):
         return self._get_message_path(key).open(mode=mode)
 
 
-class Sender:
+class QueueSender:
 
     """Send messages in a Queue using Sendmail."""
 
