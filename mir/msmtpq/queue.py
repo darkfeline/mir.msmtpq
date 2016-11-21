@@ -66,20 +66,20 @@ class Message:
                 .format(this=self))
 
     def dump(self, file):
-        """Dump message to file as JSON."""
+        """Dump message to a file as JSON."""
         json.dump({'args': self.args,
                    'message': self.message}, file)
 
     @classmethod
     def load(cls, file):
-        """Load message form JSON file."""
+        """Load message from a JSON file."""
         data = json.load(file)
         return cls(args=data['args'],
                    message=data['message'])
 
     @property
     def key(self):
-        """The message's key."""
+        """Hash key for the message."""
         hasher = hashlib.sha1()
         hasher.update(self.message.encode())
         return hasher.hexdigest()
@@ -87,7 +87,15 @@ class Message:
 
 class Queue(collections.abc.MutableMapping):
 
-    """Object mapping for the queue directory."""
+    """Message queue backed by a file system.
+
+    This class provides a Python Mapping interface to a message queue backed by
+    a directory on a file system.  Instances can be used more or less like a
+    persistent dictionary.
+
+    Methods:
+        add -- Add a message
+    """
 
     _message_cls = Message
 
