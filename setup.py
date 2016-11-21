@@ -22,7 +22,7 @@ setup(
     packages=['mir.msmtpq'],
     entry_points={
         'console_scripts': [
-            'msmtpq = mir.msmtpq.main:main',
+            'msmtpq = mir.msmtpq.__main__:main',
         ],
     },
 )

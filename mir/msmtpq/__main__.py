@@ -94,17 +94,17 @@ def main():
         sys.exit(0)
 
     if not os.path.exists(QUEUE_DIR):
-        os.mkdir(QUEUE_DIR, exist_ok=True)
+        os.makedirs(QUEUE_DIR, exist_ok=True)
 
     if args.manage:
         func = _COMMANDS[args.manage[0]]
         func(*extra_args)
     else:
-        body = sys.stdin.read()
+        message = sys.stdin.read()
         queue = _get_queue()
         queue.add(queuelib.Message(
             args=extra_args,
-            body=body))
+            message=message))
 
 
 if __name__ == '__main__':
