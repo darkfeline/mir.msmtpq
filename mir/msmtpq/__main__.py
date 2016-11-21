@@ -97,7 +97,7 @@ def main():
     else:
         body = sys.stdin.read()
         queue = _get_queue()
-        queue.add(queue_mod.Message(
+        queue.add(queuelib.Message(
             args=extra_args,
             body=body))
 
