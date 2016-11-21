@@ -25,11 +25,11 @@ from mir import msmtpq
 def test_message_eq():
     message1 = msmtpq.queue.Message(
         args=['foo', 'bar'],
-        body='Sophie is cute',
+        message='Sophie is cute',
     )
     message2 = msmtpq.queue.Message(
         args=['foo', 'bar'],
-        body='Sophie is cute',
+        message='Sophie is cute',
     )
     assert message1 == message2
 
@@ -37,23 +37,23 @@ def test_message_eq():
 def test_message_eq_different_args():
     message1 = msmtpq.queue.Message(
         args=['foo'],
-        body='Sophie is cute',
+        message='Sophie is cute',
     )
     message2 = msmtpq.queue.Message(
         args=['foo', 'bar'],
-        body='Sophie is cute',
+        message='Sophie is cute',
     )
     assert message1 != message2
 
 
-def test_message_eq_different_body():
+def test_message_eq_different_message():
     message1 = msmtpq.queue.Message(
         args=['foo', 'bar'],
-        body='Sophie is a dork',
+        message='Sophie is a dork',
     )
     message2 = msmtpq.queue.Message(
         args=['foo', 'bar'],
-        body='Sophie is cute',
+        message='Sophie is cute',
     )
     assert message1 != message2
 
@@ -61,7 +61,7 @@ def test_message_eq_different_body():
 def test_message_eq_different_type():
     message = msmtpq.queue.Message(
         args=['foo', 'bar'],
-        body='Sophie is cute',
+        message='Sophie is cute',
     )
     assert message != 0
 
@@ -69,16 +69,16 @@ def test_message_eq_different_type():
 def test_message_repr():
     message = msmtpq.queue.Message(
         args=['foo', 'bar'],
-        body='Sophie is cute',
+        message='Sophie is cute',
     )
     assert repr(message) == \
-        "Message(args=['foo', 'bar'], body='Sophie is cute')"
+        "Message(args=['foo', 'bar'], message='Sophie is cute')"
 
 
 def test_message_str():
     message = msmtpq.queue.Message(
         args=['foo', 'bar'],
-        body='Sophie is cute',
+        message='Sophie is cute',
     )
 
     with mock.patch.object(
@@ -95,7 +95,7 @@ Sophie is cute"""
 def test_message_key():
     message = msmtpq.queue.Message(
         args=['foo', 'bar'],
-        body='Sophie is cute',
+        message='Sophie is cute',
     )
     assert message.key == '7e63d917011ecb90b52e02ff5ea0b9da9daeb7c4'
 
@@ -103,31 +103,31 @@ def test_message_key():
 def test_message_dump():
     message = msmtpq.queue.Message(
         args=['foo', 'bar'],
-        body='Sophie is cute',
+        message='Sophie is cute',
     )
     file = io.StringIO()
     message.dump(file)
     file.seek(0)
     got = json.load(file)
     assert got == {'args': ['foo', 'bar'],
-                   'body': 'Sophie is cute'}
+                   'message': 'Sophie is cute'}
 
 
 def test_message_load():
-    file = io.StringIO('{"args": ["foo", "bar"], "body": "Sophie is cute"}')
+    file = io.StringIO('{"args": ["foo", "bar"], "message": "Sophie is cute"}')
     message = msmtpq.queue.Message.load(file)
     assert message.args == ['foo', 'bar']
-    assert message.body == 'Sophie is cute'
+    assert message.message == 'Sophie is cute'
 
 
 def test_queue_getitem(tmpdir):
     (tmpdir / 'sophie').write_text(
-        '{"args": ["foo", "bar"], "body": "Sophie is cute"}')
+        '{"args": ["foo", "bar"], "message": "Sophie is cute"}')
     queue = msmtpq.queue.Queue(tmpdir)
     got = queue['sophie']
     assert isinstance(got, queue._message_cls)
     assert got.args == ['foo', 'bar']
-    assert got.body == 'Sophie is cute'
+    assert got.message == 'Sophie is cute'
 
 
 def test_queue_getitem_missing(tmpdir):
@@ -138,16 +138,16 @@ def test_queue_getitem_missing(tmpdir):
 
 def test_queue_setitem(tmpdir):
     (tmpdir / 'sophie').write_text(
-        '{"args": ["foo", "bar"], "body": "Sophie is cute"}')
+        '{"args": ["foo", "bar"], "message": "Sophie is cute"}')
     queue = msmtpq.queue.Queue(tmpdir)
     message = msmtpq.queue.Message(
         args=['foo', 'bar'],
-        body='Sophie is cute',
+        message='Sophie is cute',
     )
     queue['sophie'] = message
     with (tmpdir / 'sophie').open() as file:
         got = json.load(file)
-    assert got == {"args": ["foo", "bar"], "body": "Sophie is cute"}
+    assert got == {"args": ["foo", "bar"], "message": "Sophie is cute"}
 
 
 def test_queue_delitem(tmpdir):
@@ -161,7 +161,7 @@ def test_queue_add(tmpdir):
     queue = msmtpq.queue.Queue(tmpdir)
     message = msmtpq.queue.Message(
         args=['foo', 'bar'],
-        body='Sophie is cute',
+        message='Sophie is cute',
     )
     with mock.patch.object(
             type(message), 'key',
@@ -171,7 +171,7 @@ def test_queue_add(tmpdir):
     assert got == 'message_key'
     with (tmpdir / 'message_key').open() as file:
         got = json.load(file)
-    assert got == {"args": ["foo", "bar"], "body": "Sophie is cute"}
+    assert got == {"args": ["foo", "bar"], "message": "Sophie is cute"}
 
 
 def test_queue_len(tmpdir):
@@ -191,7 +191,7 @@ def test_queue_iter(tmpdir):
 def test_sendmail():
     message = msmtpq.queue.Message(
         args=['foo', 'bar'],
-        body='Sophie is cute',
+        message='Sophie is cute',
     )
     sendmail = msmtpq.queue.Sendmail('sendmail')
     with mock.patch('subprocess.run') as run:
@@ -206,7 +206,7 @@ def test_sendmail():
 def test_sendmail_failure():
     message = msmtpq.queue.Message(
         args=['foo', 'bar'],
-        body='Sophie is cute',
+        message='Sophie is cute',
     )
     sendmail = msmtpq.queue.Sendmail('sendmail')
     with mock.patch('subprocess.run') as run:

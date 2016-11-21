@@ -39,49 +39,49 @@ class Message:
 
     Attributes:
         args -- sendmail arguments
-        body -- message body
+        message -- message (headers + body)
 
     Properties:
         key -- Hash key for the message
     """
 
-    def __init__(self, args, body):
+    def __init__(self, args, message):
         self.args = args
-        self.body = body
+        self.message = message
 
     def __eq__(self, other):
         if isinstance(other, type(self)):
-            return self.args == other.args and self.body == other.body
+            return self.args == other.args and self.message == other.message
         else:
             return NotImplemented
 
     def __repr__(self):
-        return '{cls}(args={this.args!r}, body={this.body!r})'.format(
+        return '{cls}(args={this.args!r}, message={this.message!r})'.format(
             cls=type(self).__qualname__, this=self)
 
     def __str__(self):
         return ('Key: {this.key}\n'
                 'Args: {this.args}\n'
-                '{this.body}'
+                '{this.message}'
                 .format(this=self))
 
     def dump(self, file):
         """Dump message to file as JSON."""
         json.dump({'args': self.args,
-                   'body': self.body}, file)
+                   'message': self.message}, file)
 
     @classmethod
     def load(cls, file):
         """Load message form JSON file."""
         data = json.load(file)
         return cls(args=data['args'],
-                   body=data['body'])
+                   message=data['message'])
 
     @property
     def key(self):
         """The message's key."""
         hasher = hashlib.sha1()
-        hasher.update(self.body.encode())
+        hasher.update(self.message.encode())
         return hasher.hexdigest()
 
 
@@ -159,7 +159,7 @@ class Sendmail:
         try:
             subprocess.run(
                 [self.prog] + message.args,
-                input=message.body.encode(), check=True)
+                input=message.message.encode(), check=True)
         except subprocess.CalledProcessError:
             logger.error('Failed to send %s', message.key)
             raise

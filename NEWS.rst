@@ -10,6 +10,8 @@ Changed
 ^^^^^^^
 
 - API is now stable.
+- Queued message format changed; 1.0.0 cannot send 0.2.0 messages and
+  vice versa.
 
 Fixed
 ^^^^^
