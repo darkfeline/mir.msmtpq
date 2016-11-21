@@ -29,7 +29,21 @@ logger = logging.getLogger(__name__)
 
 class Message:
 
-    """sendmail message"""
+    """Represents a message to be sent with sendmail.
+
+    Class methods:
+        load -- Load message from a file
+
+    Methods:
+        dump -- Dump message to a file
+
+    Attributes:
+        args -- sendmail arguments
+        body -- message body
+
+    Properties:
+        key -- Hash key for the message
+    """
 
     def __init__(self, args, body):
         self.args = args
