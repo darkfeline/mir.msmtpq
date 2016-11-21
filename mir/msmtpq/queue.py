@@ -22,6 +22,7 @@ import hashlib
 import json
 import logging
 import os
+import pathlib
 import subprocess
 
 logger = logging.getLogger(__name__)
@@ -100,31 +101,33 @@ class Queue(collections.abc.MutableMapping):
     _message_cls = Message
 
     def __init__(self, queue_dir):
-        # XXX Python 3.6 fspath support
-        self.queue_dir = str(queue_dir)
+        self._queue_dir = pathlib.Path(queue_dir)
+
+    def __repr__(self):
+        return '{cls}({this._queue_dir!s})'.format(
+            cls=type(self).__qualname__,
+            this=self)
 
     def __getitem__(self, key):
-        message_path = self._get_message_path(key)
         try:
-            with open(message_path) as file:
+            with self._open_message(key) as file:
                 return self._message_cls.load(file)
         except OSError as e:
             raise KeyError(key) from e
 
     def __setitem__(self, key, message):
-        message_path = self._get_message_path(key)
-        with open(message_path, 'w') as file:
+        with self._open_message(key, 'w') as file:
             message.dump(file)
 
     def __delitem__(self, key):
-        message_path = self._get_message_path(key)
-        os.unlink(message_path)
+        self._get_message_path(key).unlink()
 
     def __iter__(self):
-        yield from os.listdir(self.queue_dir)
+        # XXX Python 3.6 fspath support
+        yield from os.listdir(str(self._queue_dir))
 
     def __len__(self):
-        return len(os.listdir(self.queue_dir))
+        return len(list(iter(self)))
 
     def add(self, message):
         """Queue a message and return its key."""
@@ -132,8 +135,12 @@ class Queue(collections.abc.MutableMapping):
         return message.key
 
     def _get_message_path(self, key):
-        """Get pathname for message with given key."""
-        return os.path.join(self.queue_dir, key)
+        """Return Path to message with the given key."""
+        return self._queue_dir / key
+
+    def _open_message(self, key, mode='r'):
+        """Open the message file with the key."""
+        return self._get_message_path(key).open(mode=mode)
 
 
 class Sender:
