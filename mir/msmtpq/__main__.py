@@ -28,26 +28,6 @@ LOGFILE_PATH = os.path.join(LOGDIR, LOGFILE_NAME)
 logger = logging.getLogger(__name__)
 
 
-class Sender:
-
-    def __init__(self, queue, sendmail):
-        self.queue = queue
-        self.sendmail = sendmail
-
-    def send(self, key):
-        """Send message with key."""
-        message = self.queue[key]
-        self.sendmail(message)
-        self.queue.pop(key)
-
-    def send_all(self):
-        """Send all messages in queue."""
-        logger.info('Sending all messages.')
-        for key in self.queue:
-            self.send(key)
-        logging.info('Sending finished.')
-
-
 def _get_queue():
     return queuelib.Queue(QUEUE_DIR)
 
@@ -57,7 +37,7 @@ def _get_sendmail():
 
 
 def _get_sender():
-    return Sender(queue=_get_queue(), sendmail=_get_sendmail())
+    return queuelib.Sender(queue=_get_queue(), sendmail=_get_sendmail())
 
 
 ###############################################################################

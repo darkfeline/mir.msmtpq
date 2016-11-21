@@ -111,6 +111,26 @@ class Queue(collections.abc.MutableMapping):
         return os.path.join(self.queue_dir, key)
 
 
+class Sender:
+
+    def __init__(self, queue, sendmail):
+        self.queue = queue
+        self.sendmail = sendmail
+
+    def send(self, key):
+        """Send message with key."""
+        message = self.queue[key]
+        self.sendmail(message)
+        self.queue.pop(key)
+
+    def send_all(self):
+        """Send all messages in queue."""
+        logger.info('Sending all messages.')
+        for key in self.queue:
+            self.send(key)
+        logger.info('Sending finished.')
+
+
 class Sendmail:
 
     """sendmail wrapper."""
