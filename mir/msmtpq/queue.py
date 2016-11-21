@@ -135,15 +135,17 @@ class Queue(collections.abc.MutableMapping):
         return message.key
 
     def _get_message_path(self, key):
-        """Return Path to message with the given key."""
+        """Return the Path to the message file with the given key."""
         return self._queue_dir / key
 
     def _open_message(self, key, mode='r'):
-        """Open the message file with the key."""
+        """Open the message file with the given key."""
         return self._get_message_path(key).open(mode=mode)
 
 
 class Sender:
+
+
 
     def __init__(self, queue, sendmail):
         self.queue = queue
