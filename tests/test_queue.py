@@ -21,6 +21,12 @@ import pytest
 from mir import msmtpq
 
 
+def test_queue_repr():
+    queue = msmtpq.queue.Queue('/foo/bar')
+    got = repr(queue)
+    assert got == "Queue('/foo/bar')"
+
+
 def test_queue_getitem(tmpdir):
     (tmpdir / 'sophie').write_text(
         '{"args": ["foo", "bar"], "message": "Sophie is cute"}')
@@ -87,6 +93,12 @@ def test_queue_iter(tmpdir):
     assert list(queue) == []
     (tmpdir / 'sophie').write_text('')
     assert list(queue) == ['sophie']
+
+
+def test_sendmail_repr():
+    sendmail = msmtpq.queue.Sendmail('sendmail')
+    got = repr(sendmail)
+    assert got == "Sendmail('sendmail')"
 
 
 def test_sendmail():

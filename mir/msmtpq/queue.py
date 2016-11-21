@@ -104,9 +104,9 @@ class Queue(collections.abc.MutableMapping):
         self._queue_dir = pathlib.Path(queue_dir)
 
     def __repr__(self):
-        return '{cls}({this._queue_dir!s})'.format(
+        return '{cls}({queue_dir!r})'.format(
             cls=type(self).__qualname__,
-            this=self)
+            queue_dir=str(self._queue_dir))
 
     def __getitem__(self, key):
         try:
@@ -151,6 +151,12 @@ class Sender:
         self._queue = queue
         self._sendmail = sendmail
 
+    def __repr__(self):
+        return ('{cls}(queue={this._queue!r}, sendmail={this._sendmail!r})'
+                .format(
+                    cls=type(self).__qualname__,
+                    this=self))
+
     def send(self, key):
         """Send message with key."""
         message = self._queue[key]
@@ -175,6 +181,11 @@ class Sendmail:
         prog is the path to the sendmail program.
         """
         self._prog = prog
+
+    def __repr__(self):
+        return '{cls}({this._prog!r})'.format(
+            cls=type(self).__qualname__,
+            this=self)
 
     def __call__(self, message):
         """Send a Message instance with sendmail."""
