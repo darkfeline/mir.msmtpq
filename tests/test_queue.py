@@ -14,6 +14,7 @@
 
 import io
 import json
+import subprocess
 from unittest import mock
 
 import pytest
@@ -185,3 +186,30 @@ def test_queue_iter(tmpdir):
     assert list(queue) == []
     (tmpdir / 'sophie').write_text('')
     assert list(queue) == ['sophie']
+
+
+def test_sendmail():
+    message = msmtpq.queue.Message(
+        args=['foo', 'bar'],
+        body='Sophie is cute',
+    )
+    sendmail = msmtpq.queue.Sendmail('sendmail')
+    with mock.patch('subprocess.run') as run:
+        sendmail(message)
+    assert run.called_once_with(
+        ['sendmail', 'foo', 'bar'],
+        input=b'Sophie is cute',
+        check=True,
+    )
+
+
+def test_sendmail_failure():
+    message = msmtpq.queue.Message(
+        args=['foo', 'bar'],
+        body='Sophie is cute',
+    )
+    sendmail = msmtpq.queue.Sendmail('sendmail')
+    with mock.patch('subprocess.run') as run:
+        run.side_effect = subprocess.CalledProcessError(1, 'sendmail')
+        with pytest.raises(subprocess.CalledProcessError):
+            sendmail(message)

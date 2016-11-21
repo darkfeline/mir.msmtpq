@@ -17,8 +17,7 @@ import logging
 import os
 import sys
 
-import mir.msmtpq.queue as queue_mod
-import mir.msmtpq.sendmail as sendmail_mod
+import mir.msmtpq.queue as queuelib
 
 MSMTP_PATH = 'msmtp'
 QUEUE_DIR = os.path.join(os.environ['HOME'], '.msmtpq.queue')
@@ -50,11 +49,11 @@ class Sender:
 
 
 def _get_queue():
-    return queue_mod.Queue(QUEUE_DIR)
+    return queuelib.Queue(QUEUE_DIR)
 
 
 def _get_sendmail():
-    return sendmail_mod.Sendmail(MSMTP_PATH)
+    return queuelib.Sendmail(MSMTP_PATH)
 
 
 def _get_sender():

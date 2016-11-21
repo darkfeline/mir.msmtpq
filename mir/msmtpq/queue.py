@@ -12,12 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Message queue classes."""
+"""Message queue."""
 
 import collections.abc
 import hashlib
 import json
+import logging
 import os
+import subprocess
+
+logger = logging.getLogger(__name__)
 
 
 class Message:
@@ -105,3 +109,22 @@ class Queue(collections.abc.MutableMapping):
     def _get_message_path(self, key):
         """Get pathname for message with given key."""
         return os.path.join(self.queue_dir, key)
+
+
+class Sendmail:
+
+    """sendmail wrapper."""
+
+    def __init__(self, prog):
+        self.prog = prog
+
+    def __call__(self, message):
+        try:
+            subprocess.run(
+                [self.prog] + message.args,
+                input=message.body.encode(), check=True)
+        except subprocess.CalledProcessError:
+            logger.error('Failed to send %s', message.key)
+            raise
+        else:
+            logger.info('Sent %s', message.key)
