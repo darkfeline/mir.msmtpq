@@ -145,7 +145,7 @@ class Queue(collections.abc.MutableMapping):
 
 class Sender:
 
-
+    """Send messages in a Queue using Sendmail."""
 
     def __init__(self, queue, sendmail):
         self.queue = queue
@@ -167,12 +167,17 @@ class Sender:
 
 class Sendmail:
 
-    """sendmail wrapper."""
+    """Interface to sendmail program."""
 
     def __init__(self, prog):
+        """Initialize instance.
+
+        prog is the path to the sendmail program.
+        """
         self.prog = prog
 
     def __call__(self, message):
+        """Send a Message instance with sendmail."""
         try:
             subprocess.run(
                 [self.prog] + message.args,
