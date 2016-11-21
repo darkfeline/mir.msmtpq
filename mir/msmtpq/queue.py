@@ -160,8 +160,13 @@ class QueueSender:
     def send(self, key):
         """Send message with key."""
         message = self._queue[key]
-        self._sendmail(message)
-        self._queue.pop(key)
+        try:
+            self._sendmail(message)
+        except SendmailError:
+            logger.error('Failed to send %s', message.key)
+        else:
+            logger.info('Sent %s', message.key)
+            self._queue.pop(key)
 
     def send_all(self):
         """Send all messages in queue."""
@@ -194,10 +199,7 @@ class Sendmail:
                 [self._prog] + message.args,
                 input=message.message.encode(), check=True)
         except subprocess.CalledProcessError as e:
-            logger.error('Failed to send %s', message.key)
             raise SendmailError(str(e)) from e
-        else:
-            logger.info('Sent %s', message.key)
 
 
 class SendmailError(Exception):
