@@ -148,19 +148,19 @@ class Sender:
     """Send messages in a Queue using Sendmail."""
 
     def __init__(self, queue, sendmail):
-        self.queue = queue
-        self.sendmail = sendmail
+        self._queue = queue
+        self._sendmail = sendmail
 
     def send(self, key):
         """Send message with key."""
-        message = self.queue[key]
-        self.sendmail(message)
-        self.queue.pop(key)
+        message = self._queue[key]
+        self._sendmail(message)
+        self._queue.pop(key)
 
     def send_all(self):
         """Send all messages in queue."""
         logger.info('Sending all messages.')
-        for key in self.queue:
+        for key in self._queue:
             self.send(key)
         logger.info('Sending finished.')
 
@@ -174,13 +174,13 @@ class Sendmail:
 
         prog is the path to the sendmail program.
         """
-        self.prog = prog
+        self._prog = prog
 
     def __call__(self, message):
         """Send a Message instance with sendmail."""
         try:
             subprocess.run(
-                [self.prog] + message.args,
+                [self._prog] + message.args,
                 input=message.message.encode(), check=True)
         except subprocess.CalledProcessError:
             logger.error('Failed to send %s', message.key)
