@@ -20,9 +20,11 @@ import sys
 import mir.msmtpq.queue as queuelib
 
 MSMTP_PATH = 'msmtp'
-QUEUE_DIR = os.path.join(os.environ['HOME'], '.msmtpq.queue')
-LOGDIR = os.path.join(os.environ['HOME'], '.log')
+HOME = os.environ['HOME']
+APPDIR = os.path.join(HOME, '.config', 'msmtpq')
+QUEUE_DIR = os.path.join(APPDIR, 'queue')
 LOGFILE_NAME = 'msmtpq.log'
+LOGDIR = os.path.join(HOME, '.log')
 LOGFILE_PATH = os.path.join(LOGDIR, LOGFILE_NAME)
 
 logger = logging.getLogger(__name__)
@@ -73,7 +75,7 @@ def _list():
 
 def _setup_logging():
     if not os.path.exists(LOGDIR):
-        os.mkdir(LOGDIR)
+        os.makedirs(LOGDIR, exist_ok=True)
     logging.basicConfig(level='INFO', filename=LOGFILE_PATH,
                         format='%(asctime)s %(levelname)s %(message)s')
 
@@ -92,7 +94,7 @@ def main():
         sys.exit(0)
 
     if not os.path.exists(QUEUE_DIR):
-        os.mkdir(QUEUE_DIR)
+        os.mkdir(QUEUE_DIR, exist_ok=True)
 
     if args.manage:
         func = _COMMANDS[args.manage[0]]
