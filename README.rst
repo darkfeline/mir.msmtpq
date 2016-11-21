@@ -11,37 +11,23 @@ mir.msmtpq
    :target: https://badge.fury.io/py/mir.msmtpq
    :alt: PyPi Release
 
-mir.msmtpq is a message queue for msmtpq, for sending email
-asynchronously and queuing messages while offline.
+mir.msmtpq is a message queue for msmtp.
 
 Usage
 -----
 
-::
+msmtpq is a drop-in replacement for sendmail or msmtp.  Unlike
+sendmail or msmtp however, msmtpq will only queue messages.  This
+allows you to control when messages are sent.  Currently, msmtpq uses
+``msmtp`` in the search path for sending messages.
 
-    msmtpq <args>
+Queued messages can be sent using::
 
-Use just like msmtp or sendmail.  pymsmtpq will queue the email, but WON'T
-SEND THEM.  You will have to send them manually::
+  msmtpq --manage send
 
-    msmtpq --manage send
+Queued messages can be listed using::
 
-This allows you to control when emails are sent, allowing you to queue up emails
-when you don't have Internet access.
+  msmtpq --manage list
 
-Emacs configuration
--------------------
-
-This section describes how to use pymsmtpq with Emacs to queue emails and send
-asynchronously with msmtp and Emacs's sendmail support.
-
-Configure Emacs to use pymsmtp::
-
-    (setq message-send-mail-function 'message-send-mail-with-sendmail
-          sendmail-program "~/bin/msmtpq")  ; Change the path as appropriate
-
-Add a hook to flush the queue after sending::
-
-    (add-hook 'message-sent-hook
-              (lambda ()
-                (start-process "msmtpq-flush" nil "msmtpq" "--manage" "s")))
+Queued messages are stored in ``~/.config/msmtpq/queue``.  Logs are
+stored in ``~/.logs``.
