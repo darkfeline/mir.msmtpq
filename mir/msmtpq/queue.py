@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Message queue."""
+"""Mail queue.
+
+This module contains classes for managing the mail queue for msmtpq.
+"""
 
 import collections.abc
 import hashlib
