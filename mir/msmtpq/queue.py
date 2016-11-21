@@ -193,8 +193,12 @@ class Sendmail:
             subprocess.run(
                 [self._prog] + message.args,
                 input=message.message.encode(), check=True)
-        except subprocess.CalledProcessError:
+        except subprocess.CalledProcessError as e:
             logger.error('Failed to send %s', message.key)
-            raise
+            raise SendmailError(str(e)) from e
         else:
             logger.info('Sent %s', message.key)
+
+
+class SendmailError(Exception):
+    """Error calling sendmail."""

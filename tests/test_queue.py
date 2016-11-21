@@ -18,11 +18,11 @@ from unittest import mock
 
 import pytest
 
-from mir import msmtpq
+import mir.msmtpq.queue as queuelib
 
 
 def test_queue_repr():
-    queue = msmtpq.queue.Queue('/foo/bar')
+    queue = queuelib.Queue('/foo/bar')
     got = repr(queue)
     assert got == "Queue('/foo/bar')"
 
@@ -30,7 +30,7 @@ def test_queue_repr():
 def test_queue_getitem(tmpdir):
     (tmpdir / 'sophie').write_text(
         '{"args": ["foo", "bar"], "message": "Sophie is cute"}')
-    queue = msmtpq.queue.Queue(tmpdir)
+    queue = queuelib.Queue(tmpdir)
     got = queue['sophie']
     assert isinstance(got, queue._message_cls)
     assert got.args == ['foo', 'bar']
@@ -38,7 +38,7 @@ def test_queue_getitem(tmpdir):
 
 
 def test_queue_getitem_missing(tmpdir):
-    queue = msmtpq.queue.Queue(tmpdir)
+    queue = queuelib.Queue(tmpdir)
     with pytest.raises(KeyError):
         queue['sophie']
 
@@ -46,8 +46,8 @@ def test_queue_getitem_missing(tmpdir):
 def test_queue_setitem(tmpdir):
     (tmpdir / 'sophie').write_text(
         '{"args": ["foo", "bar"], "message": "Sophie is cute"}')
-    queue = msmtpq.queue.Queue(tmpdir)
-    message = msmtpq.queue.Message(
+    queue = queuelib.Queue(tmpdir)
+    message = queuelib.Message(
         args=['foo', 'bar'],
         message='Sophie is cute',
     )
@@ -59,14 +59,14 @@ def test_queue_setitem(tmpdir):
 
 def test_queue_delitem(tmpdir):
     (tmpdir / 'sophie').write_text('')
-    queue = msmtpq.queue.Queue(tmpdir)
+    queue = queuelib.Queue(tmpdir)
     del queue['sophie']
     assert not (tmpdir / 'sophie').exists()
 
 
 def test_queue_add(tmpdir):
-    queue = msmtpq.queue.Queue(tmpdir)
-    message = msmtpq.queue.Message(
+    queue = queuelib.Queue(tmpdir)
+    message = queuelib.Message(
         args=['foo', 'bar'],
         message='Sophie is cute',
     )
@@ -82,31 +82,31 @@ def test_queue_add(tmpdir):
 
 
 def test_queue_len(tmpdir):
-    queue = msmtpq.queue.Queue(tmpdir)
+    queue = queuelib.Queue(tmpdir)
     assert len(queue) == 0
     (tmpdir / 'sophie').write_text('')
     assert len(queue) == 1
 
 
 def test_queue_iter(tmpdir):
-    queue = msmtpq.queue.Queue(tmpdir)
+    queue = queuelib.Queue(tmpdir)
     assert list(queue) == []
     (tmpdir / 'sophie').write_text('')
     assert list(queue) == ['sophie']
 
 
 def test_sendmail_repr():
-    sendmail = msmtpq.queue.Sendmail('sendmail')
+    sendmail = queuelib.Sendmail('sendmail')
     got = repr(sendmail)
     assert got == "Sendmail('sendmail')"
 
 
 def test_sendmail():
-    message = msmtpq.queue.Message(
+    message = queuelib.Message(
         args=['foo', 'bar'],
         message='Sophie is cute',
     )
-    sendmail = msmtpq.queue.Sendmail('sendmail')
+    sendmail = queuelib.Sendmail('sendmail')
     with mock.patch('subprocess.run') as run:
         sendmail(message)
     assert run.called_once_with(
@@ -117,12 +117,12 @@ def test_sendmail():
 
 
 def test_sendmail_failure():
-    message = msmtpq.queue.Message(
+    message = queuelib.Message(
         args=['foo', 'bar'],
         message='Sophie is cute',
     )
-    sendmail = msmtpq.queue.Sendmail('sendmail')
+    sendmail = queuelib.Sendmail('sendmail')
     with mock.patch('subprocess.run') as run:
         run.side_effect = subprocess.CalledProcessError(1, 'sendmail')
-        with pytest.raises(subprocess.CalledProcessError):
+        with pytest.raises(queuelib.SendmailError):
             sendmail(message)
