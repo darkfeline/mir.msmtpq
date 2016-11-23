@@ -21,8 +21,8 @@ Fixed
 
 - Fixed messages being removed even if sending failed.
 
-0.2.0
------
+0.2.0 (2016-10-09)
+------------------
 
 Changed
 ^^^^^^^
@@ -30,7 +30,7 @@ Changed
 - ``--manage`` changed significantly.  ``s`` is now ``send``, ``l`` is now
   ``list``, ``d`` and ``o`` removed.
 
-0.1.0
------
+0.1.0 (2016-09-11)
+------------------
 
 Initial release.
