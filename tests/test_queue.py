@@ -32,7 +32,7 @@ def test_queue_getitem(tmpdir):
         '{"args": ["foo", "bar"], "message": "Sophie is cute"}')
     queue = queuelib.Queue(tmpdir)
     got = queue['sophie']
-    assert isinstance(got, queue._message_cls)
+    assert isinstance(got, queuelib.Message)
     assert got.args == ['foo', 'bar']
     assert got.message == 'Sophie is cute'
 

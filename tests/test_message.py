@@ -103,7 +103,7 @@ def test_message_dump():
         message='Sophie is cute',
     )
     file = io.StringIO()
-    message.dump(file)
+    msmtpq.queue._dump_message(message, file)
     file.seek(0)
     got = json.load(file)
     assert got == {'args': ['foo', 'bar'],
@@ -112,6 +112,6 @@ def test_message_dump():
 
 def test_message_load():
     file = io.StringIO('{"args": ["foo", "bar"], "message": "Sophie is cute"}')
-    message = msmtpq.queue.Message.load(file)
+    message = msmtpq.queue._load_message(file)
     assert message.args == ['foo', 'bar']
     assert message.message == 'Sophie is cute'

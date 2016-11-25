@@ -17,6 +17,7 @@
 This module contains classes for managing the mail queue for msmtpq.
 """
 
+import collections
 import collections.abc
 import hashlib
 import json
@@ -28,37 +29,9 @@ import subprocess
 logger = logging.getLogger(__name__)
 
 
-class Message:
+class Message(collections.namedtuple('Message', 'args,message')):
 
-    """Represents a message to be sent with sendmail.
-
-    Class methods:
-        load -- Load message from a file
-
-    Methods:
-        dump -- Dump message to a file
-
-    Attributes:
-        args -- sendmail arguments
-        message -- message (headers + body)
-
-    Properties:
-        key -- Hash key for the message
-    """
-
-    def __init__(self, args, message):
-        self.args = args
-        self.message = message
-
-    def __eq__(self, other):
-        if isinstance(other, type(self)):
-            return self.args == other.args and self.message == other.message
-        else:
-            return NotImplemented
-
-    def __repr__(self):
-        return '{cls}(args={this.args!r}, message={this.message!r})'.format(
-            cls=type(self).__qualname__, this=self)
+    __slots__ = ()
 
     def __str__(self):
         return ('Key: {this.key}\n'
@@ -66,24 +39,23 @@ class Message:
                 '{this.message}'
                 .format(this=self))
 
-    def dump(self, file):
-        """Dump message to a file as JSON."""
-        json.dump({'args': self.args,
-                   'message': self.message}, file)
-
-    @classmethod
-    def load(cls, file):
-        """Load message from a JSON file."""
-        data = json.load(file)
-        return cls(args=data['args'],
-                   message=data['message'])
-
     @property
     def key(self):
         """Hash key for the message."""
         hasher = hashlib.sha1()
         hasher.update(self.message.encode())
         return hasher.hexdigest()
+
+
+def _dump_message(message, file):
+    """Dump message to a file as JSON."""
+    json.dump(message._asdict(), file)
+
+
+def _load_message(file):
+    """Load message from a JSON file."""
+    data = json.load(file)
+    return Message(**data)
 
 
 class Queue(collections.abc.MutableMapping):
@@ -98,8 +70,6 @@ class Queue(collections.abc.MutableMapping):
         add -- Add a message
     """
 
-    _message_cls = Message
-
     def __init__(self, queue_dir):
         self._queue_dir = pathlib.Path(queue_dir)
 
@@ -111,13 +81,13 @@ class Queue(collections.abc.MutableMapping):
     def __getitem__(self, key):
         try:
             with self._open_message(key) as file:
-                return self._message_cls.load(file)
+                return _load_message(file)
         except OSError as e:
             raise KeyError(key) from e
 
     def __setitem__(self, key, message):
         with self._open_message(key, 'w') as file:
-            message.dump(file)
+            _dump_message(message, file)
 
     def __delitem__(self, key):
         self._get_message_path(key).unlink()
@@ -134,13 +104,13 @@ class Queue(collections.abc.MutableMapping):
         self[message.key] = message
         return message.key
 
-    def _get_message_path(self, key):
-        """Return the Path to the message file with the given key."""
-        return self._queue_dir / key
-
     def _open_message(self, key, mode='r'):
         """Open the message file with the given key."""
         return self._get_message_path(key).open(mode=mode)
+
+    def _get_message_path(self, key):
+        """Return the Path to the message file with the given key."""
+        return self._queue_dir / key
 
 
 class QueueSender:

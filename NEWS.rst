@@ -6,6 +6,11 @@ This project uses `semantic versioning <http://semver.org/>`_.
 1.0.1
 -----
 
+Changed
+^^^^^^^
+
+- Internal refactoring of msmtpq.queue (no public API changes).
+
 1.0.0 (2016-11-20)
 ------------------
 
