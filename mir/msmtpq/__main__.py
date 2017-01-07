@@ -15,17 +15,18 @@
 import argparse
 import logging
 import os
+import pathlib
 import sys
 
 import mir.msmtpq.queue as queuelib
 
 MSMTP_PATH = 'msmtp'
-HOME = os.environ['HOME']
-APPDIR = os.path.join(HOME, '.config', 'msmtpq')
-QUEUE_DIR = os.path.join(APPDIR, 'queue')
+HOME = pathlib.Path(os.environ['HOME'])
+APPDIR = HOME / '.config' / 'msmtpq'
+QUEUE_DIR = APPDIR / 'queue'
 LOGFILE_NAME = 'msmtpq.log'
-LOGDIR = os.path.join(HOME, '.log')
-LOGFILE_PATH = os.path.join(LOGDIR, LOGFILE_NAME)
+LOGDIR = HOME / '.log'
+LOGFILE_PATH = LOGDIR / LOGFILE_NAME
 
 logger = logging.getLogger(__name__)
 
@@ -93,8 +94,7 @@ def main():
         parser.print_help()
         sys.exit(0)
 
-    if not os.path.exists(QUEUE_DIR):
-        os.makedirs(QUEUE_DIR, exist_ok=True)
+    QUEUE_DIR.mkdir(parents=True, exist_ok=True)
 
     if args.manage:
         func = _COMMANDS[args.manage[0]]

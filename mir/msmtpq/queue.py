@@ -34,10 +34,9 @@ class Message(collections.namedtuple('Message', 'args,message')):
     __slots__ = ()
 
     def __str__(self):
-        return ('Key: {this.key}\n'
-                'Args: {this.args}\n'
-                '{this.message}'
-                .format(this=self))
+        return (f'Key: {self.key}\n'
+                f'Args: {self.args}\n'
+                f'{self.message}')
 
     @property
     def key(self):
@@ -74,9 +73,8 @@ class Queue(collections.abc.MutableMapping):
         self._queue_dir = pathlib.Path(queue_dir)
 
     def __repr__(self):
-        return '{cls}({queue_dir!r})'.format(
-            cls=type(self).__qualname__,
-            queue_dir=str(self._queue_dir))
+        cls = type(self).__qualname__
+        return f'{cls}({self._queue_dir!r})'
 
     def __getitem__(self, key):
         try:
@@ -93,8 +91,7 @@ class Queue(collections.abc.MutableMapping):
         self._get_message_path(key).unlink()
 
     def __iter__(self):
-        # XXX Python 3.6 fspath support
-        yield from os.listdir(str(self._queue_dir))
+        yield from os.listdir(self._queue_dir)
 
     def __len__(self):
         return len(list(iter(self)))
@@ -122,10 +119,8 @@ class QueueSender:
         self._sendmail = sendmail
 
     def __repr__(self):
-        return ('{cls}(queue={this._queue!r}, sendmail={this._sendmail!r})'
-                .format(
-                    cls=type(self).__qualname__,
-                    this=self))
+        cls = type(self).__qualname__
+        return f'{cls}(queue={self._queue!r}, sendmail={self._sendmail!r})'
 
     def send(self, key):
         """Send message with key."""
@@ -158,9 +153,8 @@ class Sendmail:
         self._prog = prog
 
     def __repr__(self):
-        return '{cls}({this._prog!r})'.format(
-            cls=type(self).__qualname__,
-            this=self)
+        cls = type(self).__qualname__
+        return f'{cls}({self._prog!r})'
 
     def __call__(self, message):
         """Send a Message instance with sendmail."""

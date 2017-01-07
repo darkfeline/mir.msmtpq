@@ -24,7 +24,7 @@ import mir.msmtpq.queue as queuelib
 def test_queue_repr():
     queue = queuelib.Queue('/foo/bar')
     got = repr(queue)
-    assert got == "Queue('/foo/bar')"
+    assert got == "Queue(PosixPath('/foo/bar'))"
 
 
 def test_queue_getitem(tmpdir):

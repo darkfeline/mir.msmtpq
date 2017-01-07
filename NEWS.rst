@@ -10,6 +10,7 @@ Changed
 ^^^^^^^
 
 - Internal refactoring of msmtpq.queue (no public API changes).
+- Moved to Python 3.6
 
 1.0.0 (2016-11-20)
 ------------------
