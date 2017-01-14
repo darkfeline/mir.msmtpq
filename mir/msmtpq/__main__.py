@@ -21,7 +21,7 @@ import sys
 import mir.msmtpq.queue as queuelib
 
 MSMTP_PATH = 'msmtp'
-HOME = pathlib.Path(os.environ['HOME'])
+HOME = pathlib.Path.home()
 APPDIR = HOME / '.config' / 'msmtpq'
 QUEUE_DIR = APPDIR / 'queue'
 LOGFILE_NAME = 'msmtpq.log'
