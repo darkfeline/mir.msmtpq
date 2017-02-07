@@ -1,11 +1,11 @@
 mir.msmtpq
 ==========
 
-.. image:: https://circleci.com/gh/project-mir/mir.msmtpq.svg?style=shield
-   :target: https://circleci.com/gh/project-mir/mir.msmtpq
+.. image:: https://circleci.com/gh/darkfeline/mir.msmtpq.svg?style=shield
+   :target: https://circleci.com/gh/darkfeline/mir.msmtpq
    :alt: CircleCI
-.. image:: https://codecov.io/gh/project-mir/mir.msmtpq/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/project-mir/mir.msmtpq
+.. image:: https://codecov.io/gh/darkfeline/mir.msmtpq/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/darkfeline/mir.msmtpq
    :alt: Codecov
 .. image:: https://badge.fury.io/py/mir.msmtpq.svg
    :target: https://badge.fury.io/py/mir.msmtpq
